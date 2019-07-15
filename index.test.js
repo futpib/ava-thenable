@@ -37,11 +37,45 @@ const two2 = test.join(one, 'two2', async t => {
 	finishedTests.add('two2');
 });
 
-test.join(two1, two2, 'three', async t => {
+const macro3 = async (t, argument) => {
+	t.is(argument, 'macro3 argument');
+
+	t.is(await one, undefined);
+
+	t.true(finishedTests.has('one'));
+	t.is(finishedTests.size, 1);
+
+	await randomDelay();
+
+	finishedTests.add('two3');
+};
+
+macro3.title = () => 'two3 (macro)';
+
+const two3 = test(macro3, 'macro3 argument');
+
+const macro4 = async (t, argument) => {
+	t.is(argument, 'macro4 argument');
+
+	t.true(finishedTests.has('one'));
+	t.true(finishedTests.has('two3'));
+
+	await randomDelay();
+
+	finishedTests.add('two4');
+};
+
+macro4.title = () => 'two4 (join + macro)';
+
+const two4 = test.join(two3, macro4, 'macro4 argument');
+
+test.join(two1, two2, two3, two4, 'three', async t => {
 	t.true(finishedTests.has('one'));
 	t.true(finishedTests.has('two1'));
 	t.true(finishedTests.has('two2'));
-	t.is(finishedTests.size, 3);
+	t.true(finishedTests.has('two3'));
+	t.true(finishedTests.has('two4'));
+	t.is(finishedTests.size, 5);
 });
 
 test('unrelated', t => t.pass());

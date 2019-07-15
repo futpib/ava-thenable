@@ -3,7 +3,8 @@ const { default: test } = require('ava'); // eslint-disable-line ava/use-test
 
 const mapFunctions = (f, args) => args.map(x => {
 	if (typeof x === 'function') {
-		return f(x);
+		const mapped = f(x);
+		return Object.assign(mapped, x);
 	}
 
 	return x;
