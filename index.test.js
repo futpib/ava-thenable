@@ -1,4 +1,9 @@
 
+import {
+	sortBy,
+	prop,
+} from 'sanctuary';
+
 import test from 'ava';
 
 import execa from 'execa';
@@ -17,15 +22,33 @@ test('index.test.js', async t => {
 
 	const results = await resultsPromise;
 
-	t.is(results.count, 11);
-	t.is(results.pass, 8);
+	t.is(results.count, 12);
+	t.is(results.pass, 9);
 	t.is(results.fail, 3);
 	t.is(results.todo, 1);
 
-	const failureNames = results.failures.map(fail => fail.name);
+	const failureNames = results.failures.map(fail => ({
+		name: fail.name,
+		diag: {
+			name: fail.diag.name,
+			message: fail.diag.message,
+		},
+	}));
 
-	t.deepEqual(failureNames.sort(), [
-		'throwingOne',
-		'throwingTwo',
+	t.deepEqual(sortBy(prop('name'))(failureNames), [
+		{
+			name: 'throwingOne',
+			diag: {
+				name: 'AssertionError',
+				message: 'Rejected promise returned by test',
+			},
+		},
+		{
+			name: 'throwingTwo',
+			diag: {
+				name: 'AssertionError',
+				message: 'Rejected promise returned by test',
+			},
+		},
 	]);
 });

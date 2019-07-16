@@ -69,7 +69,7 @@ macro4.title = () => 'two4 (join + macro)';
 
 const two4 = test.join(two3, macro4, 'macro4 argument');
 
-test.join(two1, two2, two3, two4, 'three1 (test.join)', async t => {
+const three1 = test.join(two1, two2, two3, two4, 'three1 (test.join)', async t => {
 	t.true(finishedTests.has('one'));
 	t.true(finishedTests.has('two1'));
 	t.true(finishedTests.has('two2'));
@@ -78,7 +78,7 @@ test.join(two1, two2, two3, two4, 'three1 (test.join)', async t => {
 	t.is(finishedTests.size, 5);
 });
 
-test('three2 (Promise.all)', async t => {
+const three2 = test('three2 (Promise.all)', async t => {
 	await Promise.all([ two1, two2, two3, two4 ]);
 	t.true(finishedTests.has('one'));
 	t.true(finishedTests.has('two1'));
@@ -93,7 +93,14 @@ const throwingOne = test('throwingOne', async () => {
 	throw new Error('test error');
 });
 
-test.join(throwingOne, 'throwingTwo', t => {
+const throwingTwo = test.join(throwingOne, 'throwingTwo', t => {
+	t.pass();
+});
+
+test('final', async t => {
+	await t.notThrowsAsync(Promise.all([ three1, three2 ]));
+	await t.throwsAsync(throwingTwo, 'test error');
+
 	t.pass();
 });
 

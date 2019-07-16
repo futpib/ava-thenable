@@ -10,13 +10,36 @@ const mapFunctions = (f, args) => args.map(x => {
 	return x;
 });
 
-const enhancedTest = Object.assign((...args) => new Promise(resolve => {
-	test(...mapFunctions(testImplementation => async (...args) => {
-		const returnValue = await testImplementation(...args);
-		resolve(returnValue);
-		return returnValue;
-	}, args));
-}), test);
+const enhancedTest = Object.assign((...args) => {
+	const testPromise = new Promise((resolve, reject) => {
+		test(...mapFunctions(testImplementation => async (...args) => {
+			try {
+				const returnValue = await testImplementation(...args);
+				resolve(returnValue);
+				return returnValue;
+			} catch (error) {
+				reject(error);
+				throw error;
+			}
+		}, args));
+	})
+		.then( // Avoid extra unhandled rejection
+			value => ({ status: 'fulfilled', value }),
+			value => ({ status: 'rejected', value }),
+		);
+
+	return {
+		then(mapFulfilled, mapRejected) {
+			return testPromise.then(({ status, value }) => {
+				if (status === 'fulfilled') {
+					mapFulfilled(value);
+				} else {
+					mapRejected(value);
+				}
+			});
+		},
+	};
+}, test);
 
 enhancedTest.join = (...args) => {
 	const firstNonPromiseArgumentIndex = args.findIndex(x => !x || typeof x.then !== 'function');
