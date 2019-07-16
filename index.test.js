@@ -1,82 +1,41 @@
 
-import delay from 'delay';
+import test from 'ava';
 
-import test from '.';
+import execa from 'execa';
 
-const finishedTests = new Set();
+test('index.test.js', async t => {
+	const { stdout } = await execa('ava', [ '--tap', 'test/fixtures/index.test.js' ]);
+	const results = stdout
+		.split('\n')
+		.filter(Boolean)
+		.filter(line => line.startsWith('ok') || line.startsWith('not ok'))
+		.map(line => line.split(' - '))
+		.reduce((accumulator, [ result, testName ]) => {
+			if (result.startsWith('ok')) {
+				accumulator.passed.push(testName);
+			} else {
+				accumulator.failed.push(testName);
+			}
 
-const randomDelay = () => delay(Math.random() * 100);
+			return accumulator;
+		}, { passed: [], failed: [] });
 
-const one = test('one', async t => {
-	t.is(finishedTests.size, 0);
+	results.passed.sort();
+	results.failed.sort();
 
-	await randomDelay();
+	t.deepEqual(results, {
+		passed: [
+			'one',
+			'two2',
+			'two1',
+			'two3 (macro)',
+			'two4 (join + macro)',
+			'three',
+			'unrelated',
+		].sort(),
 
-	finishedTests.add('one');
+		failed: [
+			'test todo # TODO',
+		].sort(),
+	});
 });
-
-const two1 = test('two1', async t => {
-	t.is(finishedTests.size, 0);
-
-	t.is(await one, undefined);
-
-	t.true(finishedTests.has('one'));
-	t.is(finishedTests.size, 1);
-
-	await randomDelay();
-
-	finishedTests.add('two1');
-});
-
-const two2 = test.join(one, 'two2', async t => {
-	t.true(finishedTests.has('one'));
-	t.is(finishedTests.size, 1);
-
-	await randomDelay();
-
-	finishedTests.add('two2');
-});
-
-const macro3 = async (t, argument) => {
-	t.is(argument, 'macro3 argument');
-
-	t.is(await one, undefined);
-
-	t.true(finishedTests.has('one'));
-	t.is(finishedTests.size, 1);
-
-	await randomDelay();
-
-	finishedTests.add('two3');
-};
-
-macro3.title = () => 'two3 (macro)';
-
-const two3 = test(macro3, 'macro3 argument');
-
-const macro4 = async (t, argument) => {
-	t.is(argument, 'macro4 argument');
-
-	t.true(finishedTests.has('one'));
-	t.true(finishedTests.has('two3'));
-
-	await randomDelay();
-
-	finishedTests.add('two4');
-};
-
-macro4.title = () => 'two4 (join + macro)';
-
-const two4 = test.join(two3, macro4, 'macro4 argument');
-
-test.join(two1, two2, two3, two4, 'three', async t => {
-	t.true(finishedTests.has('one'));
-	t.true(finishedTests.has('two1'));
-	t.true(finishedTests.has('two2'));
-	t.true(finishedTests.has('two3'));
-	t.true(finishedTests.has('two4'));
-	t.is(finishedTests.size, 5);
-});
-
-test('unrelated', t => t.pass());
-test.todo('test todo');
