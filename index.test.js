@@ -4,7 +4,9 @@ import test from 'ava';
 import execa from 'execa';
 
 test('index.test.js', async t => {
-	const { stdout } = await execa('ava', [ '--tap', 'test/fixtures/index.test.js' ]);
+	const { stdout } = await execa('ava', [ '--tap', 'test/fixtures/index.test.js' ], {
+		reject: false,
+	});
 	const results = stdout
 		.split('\n')
 		.filter(Boolean)
@@ -36,6 +38,8 @@ test('index.test.js', async t => {
 
 		failed: [
 			'test todo # TODO',
+			'throwingOne',
+			'throwingTwo',
 		].sort(),
 	});
 });

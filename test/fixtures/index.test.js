@@ -78,5 +78,14 @@ test.join(two1, two2, two3, two4, 'three', async t => {
 	t.is(finishedTests.size, 5);
 });
 
+const throwingOne = test('throwingOne', async () => {
+	await randomDelay();
+	throw new Error('test error');
+});
+
+test.join(throwingOne, 'throwingTwo', t => {
+	t.pass();
+});
+
 test('unrelated', t => t.pass());
 test.todo('test todo');
