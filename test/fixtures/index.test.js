@@ -69,7 +69,17 @@ macro4.title = () => 'two4 (join + macro)';
 
 const two4 = test.join(two3, macro4, 'macro4 argument');
 
-test.join(two1, two2, two3, two4, 'three', async t => {
+test.join(two1, two2, two3, two4, 'three1 (test.join)', async t => {
+	t.true(finishedTests.has('one'));
+	t.true(finishedTests.has('two1'));
+	t.true(finishedTests.has('two2'));
+	t.true(finishedTests.has('two3'));
+	t.true(finishedTests.has('two4'));
+	t.is(finishedTests.size, 5);
+});
+
+test('three2 (Promise.all)', async t => {
+	await Promise.all([ two1, two2, two3, two4 ]);
 	t.true(finishedTests.has('one'));
 	t.true(finishedTests.has('two1'));
 	t.true(finishedTests.has('two2'));

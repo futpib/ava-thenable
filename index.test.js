@@ -17,8 +17,8 @@ test('index.test.js', async t => {
 
 	const results = await resultsPromise;
 
-	t.is(results.count, 10);
-	t.is(results.pass, 7);
+	t.is(results.count, 11);
+	t.is(results.pass, 8);
 	t.is(results.fail, 3);
 	t.is(results.todo, 1);
 
