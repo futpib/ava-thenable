@@ -3,43 +3,29 @@ import test from 'ava';
 
 import execa from 'execa';
 
+import TapParser from 'tap-parser';
+
 test('index.test.js', async t => {
-	const { stdout } = await execa('ava', [ '--tap', 'test/fixtures/index.test.js' ], {
+	const avaProcess = execa('ava', [ '--tap', 'test/fixtures/index.test.js' ], {
 		reject: false,
 	});
-	const results = stdout
-		.split('\n')
-		.filter(Boolean)
-		.filter(line => line.startsWith('ok') || line.startsWith('not ok'))
-		.map(line => line.split(' - '))
-		.reduce((accumulator, [ result, testName ]) => {
-			if (result.startsWith('ok')) {
-				accumulator.passed.push(testName);
-			} else {
-				accumulator.failed.push(testName);
-			}
 
-			return accumulator;
-		}, { passed: [], failed: [] });
+	const tapParser = new TapParser();
+	const resultsPromise = new Promise(resolve => tapParser.on('complete', resolve));
 
-	results.passed.sort();
-	results.failed.sort();
+	avaProcess.stdout.pipe(tapParser);
 
-	t.deepEqual(results, {
-		passed: [
-			'one',
-			'two2',
-			'two1',
-			'two3 (macro)',
-			'two4 (join + macro)',
-			'three',
-			'unrelated',
-		].sort(),
+	const results = await resultsPromise;
 
-		failed: [
-			'test todo # TODO',
-			'throwingOne',
-			'throwingTwo',
-		].sort(),
-	});
+	t.is(results.count, 10);
+	t.is(results.pass, 7);
+	t.is(results.fail, 3);
+	t.is(results.todo, 1);
+
+	const failureNames = results.failures.map(fail => fail.name);
+
+	t.deepEqual(failureNames.sort(), [
+		'throwingOne',
+		'throwingTwo',
+	]);
 });
