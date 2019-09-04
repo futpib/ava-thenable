@@ -52,3 +52,21 @@ test('index.test.js', async t => {
 		},
 	]);
 });
+
+test('concurrency.test.js', async t => {
+	const avaProcess = execa('ava', [ '--tap', 'test/fixtures/concurrency.test.js' ], {
+		reject: false,
+	});
+
+	const tapParser = new TapParser();
+	const resultsPromise = new Promise(resolve => tapParser.on('complete', resolve));
+
+	avaProcess.stdout.pipe(tapParser);
+
+	const results = await resultsPromise;
+
+	t.is(results.count, 10);
+	t.is(results.pass, 10);
+	t.is(results.fail, 0);
+	t.is(results.todo, 0);
+});

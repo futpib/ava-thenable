@@ -29,5 +29,8 @@
     "extends": [
       "eslint-config-xo-overrides"
     ]
+  },
+  "dependencies": {
+    "p-queue": "^6.1.1"
   }
 }

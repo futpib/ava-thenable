@@ -35,3 +35,28 @@ Returns a `Promise` that resolves when the test has finished.
 ### test.join(...testPromises, ...args)
 
 Defines a test that waits the promises of other tests (`testPromises`). Named after [Bluebird.join](http://bluebirdjs.com/docs/api/promise.join.html).
+
+### test.configureThenable(options)
+
+Make a call to `test.configureThenable` before defining any tests.
+
+Example:
+
+```js
+import test from 'ava-thenable';
+
+test.configureThenable({
+	concurrency: 3,
+});
+
+// ...
+```
+
+#### `concurrency`
+
+Type: `number`
+Default: `Infinity`
+
+Concurrency limit.
+
+This option is passed to [`p-queue`](https://github.com/sindresorhus/p-queue#concurrency)
