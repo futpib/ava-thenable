@@ -65,8 +65,8 @@ test('concurrency.test.js', async t => {
 
 	const results = await resultsPromise;
 
-	t.is(results.count, 10);
-	t.is(results.pass, 10);
+	t.is(results.count, 20);
+	t.is(results.pass, 20);
 	t.is(results.fail, 0);
 	t.is(results.todo, 0);
 });
