@@ -2,6 +2,21 @@
 const { default: test } = require('ava'); // eslint-disable-line ava/use-test
 const { default: PQueue } = require('p-queue');
 
+class UpstreamTestError extends Error {
+	constructor(error) {
+		super('An error occurred in an upstream test');
+		this.name = 'UpstreamTestError';
+
+		if (error instanceof UpstreamTestError) {
+			this.depth = error.depth + 1;
+			this.error = error.error;
+		} else {
+			this.depth = 0;
+			this.error = error;
+		}
+	}
+}
+
 let pQueueOptions = {};
 let pQueue;
 
@@ -59,7 +74,12 @@ enhancedTest.join = (...args) => {
 	const otherArgs = args.slice(firstNonPromiseArgumentIndex);
 
 	return enhancedTest(...mapFunctions(testImplementation => async (...args) => {
-		await Promise.all(promiseArgs);
+		try {
+			await Promise.all(promiseArgs);
+		} catch (error) {
+			throw new UpstreamTestError(error);
+		}
+
 		return testImplementation(...args);
 	}, otherArgs));
 };

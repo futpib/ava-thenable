@@ -99,7 +99,7 @@ const throwingTwo = test.join(throwingOne, 'throwingTwo', t => {
 
 test('final', async t => {
 	await t.notThrowsAsync(Promise.all([ three1, three2 ]));
-	await t.throwsAsync(throwingTwo, 'test error');
+	await t.throwsAsync(throwingTwo, 'An error occurred in an upstream test');
 
 	t.pass();
 });
