@@ -28,18 +28,27 @@ const addToPQueue = f => {
 	return pQueue.add(f);
 };
 
-const mapFunctions = (f, args) => args.map(x => {
-	if (typeof x === 'function') {
-		const mapped = f(x);
-		return Object.assign(mapped, x);
-	}
+const mapFirstFunction = (f, args) => {
+	let oneFunctionMapped = false;
 
-	return x;
-});
+	return args.map(x => {
+		if (oneFunctionMapped) {
+			return x;
+		}
+
+		if (typeof x === 'function') {
+			const mapped = f(x);
+			oneFunctionMapped = true;
+			return Object.assign(mapped, x);
+		}
+
+		return x;
+	});
+};
 
 const enhancedTest = Object.assign((...args) => {
 	const testPromise = new Promise((resolve, reject) => {
-		test(...mapFunctions(testImplementation => async (...args) => {
+		test(...mapFirstFunction(testImplementation => async (...args) => {
 			try {
 				const returnValue = await addToPQueue(() => testImplementation(...args));
 				resolve(returnValue);
@@ -73,7 +82,7 @@ enhancedTest.join = (...args) => {
 	const promiseArgs = args.slice(0, firstNonPromiseArgumentIndex);
 	const otherArgs = args.slice(firstNonPromiseArgumentIndex);
 
-	return enhancedTest(...mapFunctions(testImplementation => async (...args) => {
+	return enhancedTest(...mapFirstFunction(testImplementation => async (...args) => {
 		try {
 			await Promise.all(promiseArgs);
 		} catch (error) {
