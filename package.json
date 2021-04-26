@@ -31,6 +31,6 @@
     ]
   },
   "dependencies": {
-    "p-queue": "^6.1.1"
+    "p-queue": "^7.0.0"
   }
 }
